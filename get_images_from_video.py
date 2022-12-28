@@ -15,8 +15,9 @@ frame_id = 0
 resize = True
 resize_size = (1920, 1080)
 
-start_minute = 0.01
-end_minute = 0.04
+# List of tuples with start and end minute
+minutes = [(0.10, 0.40)]
+current_set = 0
 
 # Create result folder if it does not exists
 Path(result_folder).mkdir(parents=True, exist_ok=True)
@@ -30,27 +31,39 @@ if int(major_ver) < 3:
 else:
   fps = cap.get(cv2.CAP_PROP_FPS)
 
-start_frame = int((math.floor(start_minute) * 60 + ((start_minute - math.floor(start_minute)) * 100)) * fps)
-end_frame = int((math.floor(end_minute) * 60 + ((end_minute - math.floor(end_minute)) * 100)) * fps)
-
 if (cap.isOpened() == False):
   print("Error opening video stream or file")
 
 while(cap.isOpened()):
   ret, frame = cap.read()
+
+  # Check for end of desired minutes
+  if current_set > len(minutes) - 1:
+    break
+
+  minute_tuple = minutes[current_set]
+
+  start_frame = int((math.floor(minute_tuple[0]) * 60 + ((minute_tuple[0] - math.floor(minute_tuple[0])) * 100)) * fps)
+  end_frame = int((math.floor(minute_tuple[1]) * 60 + ((minute_tuple[1] - math.floor(minute_tuple[1])) * 100)) * fps)
+
+  if start_frame > end_frame:
+    print("Start frame is greater than end frame. Moving to next set.")
+    current_set += 1
+    continue
+
   if ret == True:
     if frame_id > start_frame and frame_id < end_frame:
       if frame_id % skip_frame == 0:
         # Display the resulting frame
         if resize:
-          frame = cv2.resize(frame, resize_size )
+          frame = cv2.resize(frame, resize_size)
         cv2.imshow('Frame', frame)
         cv2.imwrite(result_folder + "/" + img_names + str(frame_id)+'.jpg', frame)
 
     frame_id +=1
 
     if frame_id > end_frame:
-      break
+      current_set += 1
 
     # Press Q on keyboard to  exit
     if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -60,8 +73,8 @@ while(cap.isOpened()):
   else:
     break
 
-    # When everything is done, release the video capture object
+# When everything is done, release the video capture object
 cap.release()
 
-  # Closes all the frames
+# Closes all the frames
 cv2.destroyAllWindows()
