@@ -4,9 +4,9 @@ import math
 
 video_name = "film"
 
-actor_name = "John_Doe"
+actor_name = "John Doe"
 video_filename = "videos/" + video_name + ".MP4"
-result_folder = "results/" + actor_name + "/"
+result_folder = "results/" + actor_name.replace(" ", "+") + "/"
 img_names = "frame_"
 
 skip_frame = 15
@@ -16,7 +16,7 @@ resize = True
 resize_size = (1920, 1080)
 
 # List of tuples with start and end minute
-minutes = [(0.10, 0.40)]
+minutes = [(0.10, 0.20)]
 current_set = 0
 
 # Create result folder if it does not exists
