@@ -43,6 +43,7 @@ for folder in folders:
             # Read input image
             img = cv2.imread(img_path)
 
+            # Get image dimensions
             img_height, img_width, _ = img.shape
 
             # if resize:
@@ -80,13 +81,14 @@ for folder in folders:
                 new_x = new_center_x - round(new_width/2)
                 new_y = new_center_y - round(new_height/2)
 
-                # Draw a rectangle in a face
+                # Draw a rectangle in a face to check accuracy of conversion
                 # cv2.rectangle(img,(x, y),(x + w, y + h),(0, 255, 255), 2)
                 cv2.rectangle(img,(new_x, new_y),(new_x + new_width, new_y + new_height),(0, 255, 255), 2)
                 cv2.putText(img, "Face", (new_x, new_y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-                roi_gray = gray[y:y+h, x:x+w]
-                roi_color = img[y:y+h, x:x+w]
-
+                
+                #roi_gray = gray[y:y+h, x:x+w]
+                #roi_color = img[y:y+h, x:x+w] 
+               
                 label_file.writelines(str(counter) + " " + str(x_center_norm) + " " + str(y_center_norm) + " " + str(width_norm) + " " + str(height_norm) + "\n")
 
                 # Display the image in a window
@@ -94,6 +96,7 @@ for folder in folders:
                 cv2.waitKey(0)
 
         label_file.close()
+    
     counter += 1
 
 classes_file.close()
