@@ -2,6 +2,7 @@ import cv2
 import os
 import shutil
 from pathlib import Path
+import numpy as np
 
 def opencv_to_yolo(img_width,img_height,x,y,w,h):
     
@@ -40,20 +41,17 @@ train_folder = "train/"
 val_folder = "val/"
 
 # Read haar cascades for detection
-face_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_frontalface_alt.xml')
+face_cascade2 = cv2.CascadeClassifier('cascades/data/haarcascade_frontalface_alt2.xml')
 
 # Get list of subfolders 
 folders = os.listdir(folder_path)
-
-# Path(labels_path).mkdir(parents=True, exist_ok=True)
 
 Path(train_folder + "/" + images_path).mkdir(parents=True, exist_ok=True)
 Path(train_folder + "/" + labels_path).mkdir(parents=True, exist_ok=True)
 
 Path(val_folder + "/" + images_path).mkdir(parents=True, exist_ok=True)
 Path(val_folder + "/" + labels_path).mkdir(parents=True, exist_ok=True)
-
-# classes_file = open(labels_path + "classes.txt", "w")
 
 class_counter = 0
 
@@ -68,8 +66,6 @@ for folder in folders:
     threshold_for_training = int(number_of_images * 0.7)
 
     threshold_counter = 0 
-
-    # classes_file.writelines((folder + '\n').replace('+',' '))
     
     for image in images:
     
@@ -108,26 +104,43 @@ for folder in folders:
 
             # Detects faces in the input image
             faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+            faces2 = face_cascade2.detectMultiScale(gray, 1.3, 5)
+
+            if len(faces) != 0 and len(faces2) != 0:
+                faces = np.concatenate((faces, faces2))
+            elif len(faces) == 0 and len(faces2) != 0:
+                faces = faces2
 
             # Loop over all the faces detected
             for(x,y,w,h) in faces: 
 
+                # Create a copy of the image to draw on
+                temp_img = img.copy()
+
                 # Convert from openCV format YOLO form
-                width_norm, height_norm, x_center_norm, y_center_norm = opencv_to_yolo(img_width,img_height,x,y,w,h)
+                width_norm, height_norm, x_center_norm, y_center_norm = opencv_to_yolo(img_width, img_height, x, y, w, h)
 
                 # Draw a rectangle in a face to check accuracy of conversion
-                cv2.rectangle(img,(x, y),(x + w, y + h),(0, 255, 255), 2)
-                cv2.putText(img, folder.replace('+',' '), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-               
-                label_file.writelines(str(class_counter) + " " + str(x_center_norm) + " " + str(y_center_norm) + " " + str(width_norm) + " " + str(height_norm) + "\n")
+
+                cv2.rectangle(temp_img, (x, y),(x + w, y + h),(0, 255, 255), 2)
+                cv2.putText(temp_img, folder.replace('+',' '), (x, y - 2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                cv2.putText(temp_img, "Q - Discard Box", (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
+                cv2.putText(temp_img, "P - Keep Box", (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
 
                 # Display the image in a window
-                cv2.imshow('Image',img)
-                cv2.waitKey(0)
-        
+                cv2.imshow('Image', temp_img)
+    
+                if cv2.waitKey(0) == ord('q'):
+                    print("Discard")
+                    cv2.destroyAllWindows()
+                    continue
+                else:
+                    print("Keep")
+                    label_file.writelines(str(class_counter) + " " + str(x_center_norm) + " " + str(y_center_norm) + " " + str(width_norm) + " " + str(height_norm) + "\n")
+                    cv2.destroyAllWindows()
+
         label_file.close()
     
     class_counter += 1
 
-# classes_file.close()
 cv2.destroyAllWindows()
