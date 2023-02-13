@@ -5,7 +5,7 @@ import cv2
 results_directory = "results/"
 
 # Resize image
-resize = True
+resize = False
 resize_size = (1920, 1080)
 
 # Download images from the web
@@ -16,10 +16,10 @@ response.directory = results_directory
 response.extensions = ".jpg"
 
 # Keywords to search for
-keywords = ["Will Smith", "Tom Cruise", "Johnny Depp"]
+keywords = ["Walter White"]
 
 for kw in keywords:
-    response.download(kw.replace(" ", "+"), limit = 30)
+    response.download(kw.replace(" ", "+"), limit = 300)
     subfolder_path = results_directory + kw.replace(" ", "+")
     images = os.listdir(subfolder_path)
 
@@ -27,5 +27,6 @@ for kw in keywords:
         for image in images:
             filename = subfolder_path + "/" + image
             img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
-            img = cv2.resize(img, resize_size)
-            cv2.imwrite(filename, img)
+            if not img is None:
+                img = cv2.resize(img, resize_size)
+                cv2.imwrite(filename, img)

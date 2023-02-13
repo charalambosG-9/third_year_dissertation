@@ -3,6 +3,7 @@ import os
 import shutil
 from pathlib import Path
 import numpy as np
+from augment_images import augment_images
 
 def opencv_to_yolo(img_width,img_height,x,y,w,h):
     
@@ -54,6 +55,7 @@ Path(val_folder + "/" + images_path).mkdir(parents=True, exist_ok=True)
 Path(val_folder + "/" + labels_path).mkdir(parents=True, exist_ok=True)
 
 class_counter = 0
+total_images = 0
 
 for folder in folders:
     
@@ -63,14 +65,16 @@ for folder in folders:
 
     number_of_images = len(images)
 
-    threshold_for_training = int(number_of_images * 0.7)
+    total_images += number_of_images
+
+    threshold_for_training = int(number_of_images * 0.8)
 
     threshold_counter = 0 
     
     for image in images:
     
         # make sure file is an image
-        if image.endswith(('.jpg', '.png', 'jpeg')):
+        if image.endswith(('.jpg', '.png', 'jpeg', '.JPG', '.PNG', 'JPEG')):
             img_path = subfolder_path + "/" + image
 
             threshold_counter += 1
@@ -111,6 +115,17 @@ for folder in folders:
             elif len(faces) == 0 and len(faces2) != 0:
                 faces = faces2
 
+            # If no faces are detected, skip the image, and delete image and label file
+            if len(faces) == 0:
+                print("No faces detected")
+                label_file.close()
+                os.remove(img_path)
+                os.remove(label_file.name)
+                total_images -= 1
+
+                continue
+
+
             # Loop over all the faces detected
             for(x,y,w,h) in faces: 
 
@@ -144,3 +159,6 @@ for folder in folders:
     class_counter += 1
 
 cv2.destroyAllWindows()
+
+augment_images(images_path = "train/images", labels_path = "train/labels", images_to_generate = total_images * 0.8)
+augment_images(images_path = "val/images", labels_path = "val/labels", images_to_generate = total_images * 0.2)
