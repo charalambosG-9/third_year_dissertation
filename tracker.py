@@ -26,7 +26,10 @@ def opencv_to_yolo(img_width,img_height,x,y,w,h):
 # Remove suffix from image name
 def remove_suffix(image):
 
-    image = image.removesuffix(('.jpg', '.png', 'jpeg', '.JPG', '.PNG', 'JPEG'))
+    suffixes = ('.jpg', '.png', 'jpeg', '.JPG', '.PNG', 'JPEG')
+
+    for suffix in suffixes:
+        image = image.removesuffix(suffix)
 
     return image
 
