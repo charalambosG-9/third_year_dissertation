@@ -1,0 +1,9 @@
+train: ./data/train
+val: ./data/val
+test: ./data/test
+
+# number of classes
+nc: 2
+
+# class names
+names: ['Jesse Pinkman', 'Walter White']
