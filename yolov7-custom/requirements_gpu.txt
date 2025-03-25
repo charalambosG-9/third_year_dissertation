@@ -1,6 +1,6 @@
 # For torch GPU
 
--i https://download.pytorch.org/whl/cu113
+-i https://download.pytorch.org/whl/cu121
 
-torch==1.13.1+cu113 
-torchvision==0.12.0+cu113 
+torch==2.2.0+cu121
+torchvision==0.17.0+cu121
